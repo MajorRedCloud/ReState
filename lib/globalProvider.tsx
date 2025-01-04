@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { useAppwrite } from "./useAppwrite";
 import { getCurrentUser } from "./appwrite";
+import { ImageSourcePropType } from "react-native";
 
 interface user {
     $id: string,
