@@ -1,30 +1,63 @@
 import { FeaturedCards, ProfileCards } from "@/components/Cards";
 import Filter from "@/components/Filter";
+import NoResults from "@/components/NoResults";
 import Search from "@/components/Search";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
+import { getLatestProperties, getProperties } from "@/lib/appwrite";
 import { useGlobalContext } from "@/lib/globalProvider";
 import seed from "@/lib/seed";
-import { Link } from "expo-router";
-import { Button, FlatList, Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { useAppwrite } from "@/lib/useAppwrite";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, Button, FlatList, Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
 
   const { user } = useGlobalContext()
+  const params = useLocalSearchParams<{query?:string, filter?:string}>()
+
+  const {data: latestProperties, loading: latestPropertiesLoading} = useAppwrite({
+    fn: getLatestProperties
+  })
+
+  const {data: properties, loading: propertiesLoading, refetch} = useAppwrite({
+    fn: getProperties,
+    params: {
+      filter: params.filter!,
+      query: params.query!,
+      limit: 8
+    },
+    skip:true
+  })
+
+  useEffect(() => {
+    refetch({
+      filter: params.filter!,
+      query: params.query!, 
+      limit: 8
+    })
+  }, [params.filter, params.query])
+
+  const handleCardPress = (id: string) => {
+    router.push(`/properties/${id}`)
+  }
+  
 
   return (
     <SafeAreaView className="bg-white h-full pb-16">
       <StatusBar barStyle={'dark-content'} animated />
 
       <FlatList
-        data={['a', 'b',  'c', 'd', 'e', 'f']}
-        renderItem={({item}) => (<ProfileCards />)}
-        keyExtractor={(item => item.toString())}
+        data={properties}
+        renderItem={({item}) => (<ProfileCards item={item} onPress={() => handleCardPress(item.$id)}/>)}
+        keyExtractor={(item => item.name.toString())}
         numColumns={2}
         contentContainerClassName="pb-16"
         columnWrapperClassName="flex gap-5 px-5"
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={propertiesLoading ? (<ActivityIndicator size={'large'} className="mt-5 text-primary-300" />) :  (<NoResults />)}
         ListHeaderComponent={<View className="px-5">
         
           {/* most outer view */}
@@ -62,16 +95,18 @@ export default function Index() {
             </TouchableOpacity>
           </View>
   
-          {/* Featured Cards */}
+
+          {latestPropertiesLoading ? (<ActivityIndicator size={'large'} className="text-primary-300" />) : !latestProperties || latestProperties.length===0 ? (<NoResults />) : (
           <FlatList 
-            data={['1','2','3','4']} 
-            renderItem={(item) => (<FeaturedCards />)}
-            keyExtractor={(item => item.toString())}
+            data={latestProperties} 
+            renderItem={({item}) => (<FeaturedCards item={item} onPress={() => handleCardPress(item.$id)}/>)}
+            keyExtractor={(item => item.name.toString())}
             horizontal  
             showsHorizontalScrollIndicator={false}
             bounces={false}
+            ListEmptyComponent={<NoResults />}
             contentContainerClassName="flex gap-5 mt-3"
-          />
+          />)}
   
           {/* headings for profile cards */}
           <View className="flex flex-row items-center justify-between mt-7">
