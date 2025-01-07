@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.eurotraxh.restate"
     },
     "web": {
       "bundler": "metro",
@@ -36,7 +37,7 @@
       [
         "expo-font",
         {
-          "fonts" : [
+          "fonts": [
             "./assets/fonts/Rubik-Bold.ttf",
             "./assets/fonts/Rubik-ExtraBold.ttf",
             "./assets/fonts/Rubik-Medium.ttf",
@@ -49,6 +50,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "6fd71e0a-3963-4142-85e3-2eb969739e91"
+      }
     }
   }
 }
